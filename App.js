@@ -7,7 +7,7 @@ import Main from './components/main/Main';
 
 export default class App extends Component {
   render() {
-    return (    
+    return (
       <Main>
         
       </Main>
@@ -20,6 +20,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#ffffff' //'#F5FCFF'
   }
 });
