@@ -1,16 +1,24 @@
 import React, {Component} from 'react';
 import { 
-  StyleSheet
+  StyleSheet,
+  View
 } from 'react-native';
 
-import Main from './components/main/Main';
+import Main from './components/Main';
 
 export default class App extends Component {
+  state = {
+    isLoaded: false
+  };
+
   render() {
+    const { isLoaded } = this.state;
     return (
-      <Main>
-        
-      </Main>
+      <View style={styles.container}>
+        {
+          isLoaded ? <Main></Main> : <Main></Main>
+        }
+      </View>
     );
   }
 }
