@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 
 import Link from './Link'
+import uuidv1 from 'uuid/v1';
 
 'use strict';
 
@@ -29,26 +30,16 @@ export default class Main extends Component {
     }
 
     appendNew = (name, url) => {
-        this.setState( prevState => {
+        const ID = uuidv1();
+        const newLinkObj = {
+            name: name,
+            url: url,
+            id: ID
+        };
 
-            const newLinkObj = {
-                name: name,
-                url: url
-            };
+        this.state.links.push(newLinkObj);
 
-            const newState = {
-                ...prevState,
-                newName: name,
-                newUrl: url,
-                links: {
-                    ...prevState.links,
-                    newLinkObj
-                }
-            };
-
-            this.saveLinks(newState.links);
-            return {...newState};
-        });
+        this.setState({links: this.state.links});
     }
 
     saveLinks = links => {
@@ -57,6 +48,11 @@ export default class Main extends Component {
 
     render(){
         const { name, url, links} = this.state;
+
+        let link = links.map(l => {
+            return <Link key={l.id} linkName={l.name} url={l.url} {...l} />
+        });
+
         return (
             <View>
                 <TextInput style={styles.input}
@@ -81,11 +77,7 @@ export default class Main extends Component {
                     <Text style={styles.appendButtonText}> Append </Text>
                 </TouchableOpacity>
                 <ScrollView>
-                    {Object.values(links)
-                    .reverse()
-                    .map( link => (
-                        <Link linkName={link.name} url={link.url} {...link} />
-                    ))}
+                    {link}
                 </ScrollView>
             </View >
         );
