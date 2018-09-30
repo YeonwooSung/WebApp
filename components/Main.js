@@ -1,10 +1,23 @@
 import React, { Component } from 'react'
-import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    TextInput,
+    StyleSheet,
+    AsyncStorage,
+    ScrollView
+} from 'react-native'
+
+import Link from './Link'
+
+'use strict';
 
 export default class Main extends Component {
     state = {
         name: '',
-        url: ''
+        url: '',
+        links: []
     }
 
     handleName = (text) => {
@@ -16,10 +29,34 @@ export default class Main extends Component {
     }
 
     appendNew = (name, url) => {
-        alert('name: ' + name + ' url: ' + url)
+        this.setState( prevState => {
+
+            const newLinkObj = {
+                name: name,
+                url: url
+            };
+
+            const newState = {
+                ...prevState,
+                newName: name,
+                newUrl: url,
+                links: {
+                    ...prevState.links,
+                    newLinkObj
+                }
+            };
+
+            this.saveLinks(newState.links);
+            return {...newState};
+        });
+    }
+
+    saveLinks = links => {
+        AsyncStorage.setItem("links", JSON.stringify(links));
     }
 
     render(){
+        const { name, url, links} = this.state;
         return (
             <View>
                 <TextInput style={styles.input}
@@ -39,10 +76,17 @@ export default class Main extends Component {
                 <TouchableOpacity
                     style={styles.appendButton}
                     onPress={
-                        () => this.appendNew(this.state.name, this.state.url)
+                        () => this.appendNew(name, url)
                     }>
                     <Text style={styles.appendButtonText}> Append </Text>
                 </TouchableOpacity>
+                <ScrollView>
+                    {Object.values(links)
+                    .reverse()
+                    .map( link => (
+                        <Link linkName={link.name} url={link.url} {...link} />
+                    ))}
+                </ScrollView>
             </View >
         );
     }
