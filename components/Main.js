@@ -6,7 +6,9 @@ import {
     TextInput,
     StyleSheet,
     AsyncStorage,
-    ScrollView
+    ScrollView,
+    WebView,
+    BackHandler
 } from 'react-native'
 
 import Link from './Link'
@@ -18,8 +20,33 @@ export default class Main extends Component {
     state = {
         name: '',
         url: '',
-        links: []
+        links: [],
+        webView: <View></View>,
+        isLoaded: false
     }
+
+    componentDidMount = () => {
+        /* get data from async storage */
+        const returnedVal = this.loadLinks();
+
+        if (returnedVal.links != undefined) {
+            this.setState({ links: returnedVal.links });
+        }
+
+        BackHandler.addEventListener("hardwareBackPress", this.onBackPress);
+    }
+
+    componentWillUnmount() {
+        BackHandler.removeEventListener('hardwareBackPress', this.onBackPress);
+    }
+
+    onBackPress = () => {
+        if (!this.state.isLoaded) {
+            return false;
+        }
+        this.state.isLoaded = false;
+        return true;
+    };
 
     handleName = (text) => {
         this.setState({ name: text })
@@ -42,19 +69,45 @@ export default class Main extends Component {
         this.setState({links: this.state.links});
     }
 
-    saveLinks = links => {
-        AsyncStorage.setItem("links", JSON.stringify(links));
+    renderContent = (url) => {
+        this.state.isLoaded = true;
+        const webView = <WebView source={{ uri: url }} startInLoadingState={true} javaScriptEnabled={true} domStorageEnabled={true} />
+
+        this.setState({webView: webView});
     }
 
-    render(){
-        const { name, url, links} = this.state;
+    loadLinks = async () => {
+        try {
+            const links = await AsyncStorage.getItem("links");
+
+            const parsedLinks = JSON.parse(links);
+
+            return parsedLinks;
+        } catch (err) {
+            return {links: []};
+        }
+    }
+
+    saveLinks = async (links) => {
+        await AsyncStorage.setItem("links", JSON.stringify(links));
+    }
+
+    render() {
+        const { name, url, links, webView, isLoaded} = this.state;
 
         let link = links.map(l => {
-            return <Link key={l.id} linkName={l.name} url={l.url} {...l} />
+            return <Link key={l.id} linkName={l.name} url={l.url} renderContent={this.renderContent} {...l} />
         });
 
+        if (isLoaded) {
+            return (
+            <View style={styles.webContainer} >
+                {webView}
+            </View>);
+        }
+
         return (
-            <View>
+            <View style={styles.container}>
                 <TextInput style={styles.input}
                     underlineColorAndroid="transparent"
                     placeholder="The name of the new link"
@@ -85,6 +138,15 @@ export default class Main extends Component {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#ffffff' //'#F5FCFF'
+    },
+    webContainer: {
+        flex: 1
+    },
     input: {
         height: 40,
         width: 200,
@@ -97,9 +159,10 @@ const styles = StyleSheet.create({
         padding: 10,
         margin: 10,
         height: 40,
+        width: 200,
         alignItems: 'center'
     },
     appendButtonText: {
         color: 'white'
     }
-})
+});

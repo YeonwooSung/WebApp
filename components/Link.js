@@ -3,7 +3,8 @@ import {
     View,
     StyleSheet,
     TouchableOpacity,
-    Text
+    Text,
+    WebView
 } from 'react-native'
 import PropTypes from 'prop-types';
 
@@ -16,13 +17,18 @@ export default class Link extends React.Component {
 
     static propTypes = {
         linkName: PropTypes.string.isRequired,
-        url: PropTypes.string.isRequired
+        url: PropTypes.string.isRequired,
+        renderContent: PropTypes.func.isRequired
+    }
+
+    displayWebView = () => {
+        this.props.renderContent(this.props.url);
     }
 
     render() {
         return (
             <View>
-                <TouchableOpacity style={styles.nameButton}>
+                <TouchableOpacity onPress={ this.displayWebView } style={styles.nameButton}>
                     <Text>
                         { this.props.linkName }
                     </Text>
@@ -38,6 +44,7 @@ const styles = StyleSheet.create({
         width: 200,
         margin: 10,
         borderColor: '#7a42f4',
-        borderWidth: 1
+        borderWidth: 1,
+        alignItems: 'center'
     }
-})
+});
