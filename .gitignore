@@ -2,3 +2,5 @@
 /.idea
 .idea
 .vscode
+/android/.gradle
+/android/.settings
