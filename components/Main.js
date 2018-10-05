@@ -41,11 +41,14 @@ export default class Main extends Component {
     }
 
     onBackPress = () => {
-        if (!this.state.isLoaded) {
-            return false;
+        const isLoaded = this.state.isLoaded;
+
+        if (isLoaded) {
+            this.setState({ isLoaded: false });
+        } else {
+            this.setState({isLoaded: true});
         }
-        this.state.isLoaded = false;
-        return true;
+        return isLoaded;
     };
 
     handleName = (text) => {
