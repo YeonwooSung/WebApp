@@ -8,13 +8,18 @@ import {
     AsyncStorage,
     ScrollView,
     WebView,
-    BackHandler
+    BackHandler,
+    Platform,
+    Dimensions,
+    StatusBar
 } from 'react-native'
 
 import Link from './Link'
 import uuidv1 from 'uuid/v1';
 
 'use strict';
+
+const { height, width } = Dimensions.get("window");
 
 export default class Main extends Component {
     state = {
@@ -67,9 +72,11 @@ export default class Main extends Component {
             id: ID
         };
 
-        this.state.links.push(newLinkObj);
+        const arr = this.state.links;
+        arr.push(newLinkObj);
 
-        this.setState({links: this.state.links});
+        this.setState({links: arr});
+        this.saveLinks(arr);
     }
 
     renderContent = (url) => {
@@ -80,19 +87,23 @@ export default class Main extends Component {
     }
 
     loadLinks = async () => {
-        try {
-            const links = await AsyncStorage.getItem("links");
-
-            const parsedLinks = JSON.parse(links);
-
-            return parsedLinks;
-        } catch (err) {
-            return {links: []};
-        }
+        let l;
+        await AsyncStorage.getItem("linkArray", (err, res) => {
+            if (err) {
+                l = {links: []};
+            } else {
+                l = JSON.parse(res);
+            }
+        });
+        return l;
     }
 
     saveLinks = async (links) => {
-        await AsyncStorage.setItem("links", JSON.stringify(links));
+        await AsyncStorage.setItem("linkArray", JSON.stringify(links), (err) => {
+            if (err) {
+                alert(err);
+            }
+        });
     }
 
     render() {
@@ -111,30 +122,34 @@ export default class Main extends Component {
 
         return (
             <View style={styles.container}>
-                <TextInput style={styles.input}
-                    underlineColorAndroid="transparent"
-                    placeholder="The name of the new link"
-                    placeholderTextColor="#9a73ef"
-                    autoCapitalize="none"
-                    onChangeText={this.handleName} />
+                <StatusBar barStyle="light-content" />
+                <Text style={styles.title}>WebApp</Text>
+                <View style={styles.subContainer}>
+                    <TextInput style={styles.input}
+                        underlineColorAndroid="transparent"
+                        placeholder="The name of the new link"
+                        placeholderTextColor="#9a73ef"
+                        autoCapitalize="none"
+                        onChangeText={this.handleName} />
 
-                <TextInput style={styles.input}
-                    underlineColorAndroid="transparent"
-                    placeholder="URL"
-                    placeholderTextColor="#9a73ef"
-                    autoCapitalize="none"
-                    onChangeText={this.handleURL} />
+                    <TextInput style={styles.input}
+                        underlineColorAndroid="transparent"
+                        placeholder="URL"
+                        placeholderTextColor="#9a73ef"
+                        autoCapitalize="none"
+                        onChangeText={this.handleURL} />
 
-                <TouchableOpacity
-                    style={styles.appendButton}
-                    onPress={
-                        () => this.appendNew(name, url)
-                    }>
-                    <Text style={styles.appendButtonText}> Append </Text>
-                </TouchableOpacity>
-                <ScrollView>
-                    {link}
-                </ScrollView>
+                    <TouchableOpacity
+                        style={styles.appendButton}
+                        onPress={
+                            () => this.appendNew(name, url)
+                        }>
+                        <Text style={styles.appendButtonText}> Append </Text>
+                    </TouchableOpacity>
+                    <ScrollView>
+                        {link}
+                    </ScrollView>
+                </View>
             </View >
         );
     }
@@ -145,7 +160,35 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#ffffff' //'#F5FCFF'
+        backgroundColor: '#9232db'
+    },
+    subContainer: {
+        backgroundColor: "white",
+        flex: 1,
+        width: width - 25,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        ...Platform.select({
+            ios: {
+                shadowColor: "rgb(50, 50, 50)",
+                shadowOpacity: 0.5,
+                shadowRadius: 5,
+                shadowOffset: {
+                    height: -1,
+                    width: 0
+                }
+            },
+            android: {
+                elevation: 3
+            }
+        })
+    },
+    title: {
+        color: '#e0cbef',
+        fontSize: 20,
+        marginTop: 25,
+        fontWeight: "200",
+        marginBottom: 15
     },
     webContainer: {
         flex: 1
